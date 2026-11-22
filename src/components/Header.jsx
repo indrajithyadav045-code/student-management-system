@@ -1,11 +1,13 @@
 import React from 'react';
-import { Menu, Calendar, Bell, Shield, Search } from 'lucide-react';
+import { Menu, Calendar } from 'lucide-react';
+import { getAcademicYearInfo } from '../utils/helpers';
 
 export default function Header({ 
   activeTab, 
-  onToggleMobileSidebar, 
-  studentCount = 0 
+  onToggleMobileSidebar
 }) {
+  const academicYearInfo = getAcademicYearInfo();
+
   const today = new Date().toLocaleDateString('en-US', {
     weekday: 'short',
     month: 'short',
@@ -41,10 +43,10 @@ export default function Header({
           <span>{today}</span>
         </div>
 
-        {/* Portal Info Chip */}
+        {/* Dynamic Academic Year Tag */}
         <div className="header-chip">
           <span className="chip-dot"></span>
-          <span>AY 2024–2025</span>
+          <span>{academicYearInfo.tag}</span>
         </div>
 
         {/* Admin Profile */}

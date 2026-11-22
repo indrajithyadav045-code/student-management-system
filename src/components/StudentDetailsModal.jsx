@@ -5,11 +5,9 @@ import {
   Phone, 
   MapPin, 
   Calendar, 
-  GraduationCap, 
   User, 
   Edit3, 
-  Clock, 
-  IdCard 
+  Clock 
 } from 'lucide-react';
 
 export default function StudentDetailsModal({

@@ -5,10 +5,7 @@ import {
   GraduationCap, 
   UserPlus, 
   ArrowRight, 
-  Calendar, 
-  TrendingUp, 
   Clock, 
-  BookOpen, 
   CheckCircle2,
   Sparkles
 } from 'lucide-react';
@@ -24,26 +21,60 @@ export default function Dashboard({
   // 1. Total Registered Students
   const totalStudents = students.length;
 
-  // 2. Total Departments
-  const uniqueDepartments = new Set(students.map((s) => s.department).filter(Boolean));
-  const totalDepartments = uniqueDepartments.size || DEPARTMENTS.length;
+  // 2. Total Departments dynamically computed from actual student records
+  const uniqueDepartments = new Set(
+    students.map((s) => s.department?.trim()).filter(Boolean)
+  );
+  const totalDepartments = uniqueDepartments.size;
 
-  // 3. First-Year Students
+  // 3. First-Year Students Count accurately filtered
   const firstYearStudents = students.filter(
     (s) => s.yearOfStudy && s.yearOfStudy.toLowerCase().includes('1st')
   ).length;
 
-  // 4. Latest Registrations (sorted by createdAt or reverse insertion)
+  const firstYearPercentage = totalStudents > 0 
+    ? Math.round((firstYearStudents / totalStudents) * 100) 
+    : 0;
+
+  // 4. Latest Registrations: Meaningful metric
+  // Number of enrollments within the last 30 days, or fallback to the latest intake cohort
+  const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+  const recent30DaysCount = students.filter((s) => {
+    if (!s.createdAt) return false;
+    const d = new Date(s.createdAt);
+    return !isNaN(d.getTime()) && d >= thirtyDaysAgo;
+  }).length;
+
+  const latestMetricValue = recent30DaysCount > 0 
+    ? recent30DaysCount 
+    : Math.min(totalStudents, 5);
+  const latestMetricLabel = recent30DaysCount > 0 
+    ? 'Enrolled past 30 days' 
+    : (totalStudents > 0 ? 'Latest active intake' : 'No recent records');
+
+  // Actual five latest students sorted descending by creation timestamp
   const latestStudents = [...students]
-    .sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0))
+    .sort((a, b) => {
+      const timeA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+      const timeB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+      return timeB - timeA;
+    })
     .slice(0, 5);
 
-  // Department distribution
-  const deptCounts = DEPARTMENTS.map((dept) => {
-    const count = students.filter((s) => s.department === dept).length;
-    const percentage = totalStudents > 0 ? Math.round((count / totalStudents) * 100) : 0;
-    return { name: dept, count, percentage };
-  }).sort((a, b) => b.count - a.count);
+  // Department Distribution dynamically aggregated
+  // Gather all unique departments from both default catalog and actual student data
+  const allDeptNames = Array.from(
+    new Set([...DEPARTMENTS, ...Array.from(uniqueDepartments)])
+  );
+
+  const deptCounts = allDeptNames
+    .map((dept) => {
+      const count = students.filter((s) => s.department === dept).length;
+      const percentage = totalStudents > 0 ? Math.round((count / totalStudents) * 100) : 0;
+      return { name: dept, count, percentage };
+    })
+    .filter((item) => item.count > 0 || totalStudents === 0)
+    .sort((a, b) => b.count - a.count);
 
   const getInitials = (name) => {
     if (!name) return 'ST';
@@ -80,14 +111,14 @@ export default function Dashboard({
         </div>
       </div>
 
-      {/* 4 Primary Statistics Cards */}
+      {/* 4 Primary Dynamic Statistics Cards */}
       <div className="stats-grid">
         <StatCard
           title="Total Registered Students"
           value={totalStudents}
           icon={Users}
-          trend="+100%"
-          trendLabel="Active enrollment"
+          trend={totalStudents > 0 ? `${totalStudents} Active` : '0 Active'}
+          trendLabel="Current institutional records"
           iconBg="#eef2ff"
           iconColor="#4f46e5"
         />
@@ -96,8 +127,8 @@ export default function Dashboard({
           title="Academic Departments"
           value={totalDepartments}
           icon={Building2}
-          trend="7 Active"
-          trendLabel="Engineering & Sciences"
+          trend={`${totalDepartments} Active`}
+          trendLabel={totalDepartments === 1 ? 'Faculty enrolled' : 'Faculties enrolled'}
           iconBg="#ecfdf5"
           iconColor="#059669"
         />
@@ -106,7 +137,7 @@ export default function Dashboard({
           title="First-Year Students"
           value={firstYearStudents}
           icon={GraduationCap}
-          trend={`${totalStudents > 0 ? Math.round((firstYearStudents / totalStudents) * 100) : 0}%`}
+          trend={`${firstYearPercentage}%`}
           trendLabel="Freshman cohort"
           iconBg="#eff6ff"
           iconColor="#0284c7"
@@ -114,10 +145,10 @@ export default function Dashboard({
 
         <StatCard
           title="Latest Registrations"
-          value={latestStudents.length}
+          value={latestMetricValue}
           icon={Clock}
-          trend="Real-time"
-          trendLabel="Recent admissions"
+          trend={recent30DaysCount > 0 ? `+${recent30DaysCount}` : `${latestMetricValue}`}
+          trendLabel={latestMetricLabel}
           iconBg="#faf5ff"
           iconColor="#7e22ce"
         />
@@ -133,7 +164,7 @@ export default function Dashboard({
                 <Clock size={20} color="#4f46e5" />
                 <span>Recent Registrations</span>
               </h2>
-              <p>Most recently enrolled students in the university records</p>
+              <p>Actual five latest enrolled students in the university records</p>
             </div>
             <button
               className="btn btn-ghost"
@@ -209,28 +240,34 @@ export default function Dashboard({
           </div>
 
           <div className="dept-stat-list">
-            {deptCounts.slice(0, 6).map((item) => (
-              <div key={item.name} className="dept-stat-item">
-                <div className="dept-stat-labels">
-                  <span style={{ fontSize: '0.8125rem', fontWeight: 500 }}>{item.name}</span>
-                  <span style={{ fontWeight: 600, color: '#0f172a' }}>
-                    {item.count} <span style={{ color: '#94a3b8', fontWeight: 400 }}>({item.percentage}%)</span>
-                  </span>
-                </div>
-                <div className="dept-progress-bar">
-                  <div 
-                    className="dept-progress-fill" 
-                    style={{ width: `${Math.max(item.percentage, 4)}%` }}
-                  />
-                </div>
+            {deptCounts.length === 0 || totalStudents === 0 ? (
+              <div style={{ textAlign: 'center', padding: '24px', color: '#64748b', fontSize: '0.875rem' }}>
+                No departmental enrollment data available.
               </div>
-            ))}
+            ) : (
+              deptCounts.slice(0, 6).map((item) => (
+                <div key={item.name} className="dept-stat-item">
+                  <div className="dept-stat-labels">
+                    <span style={{ fontSize: '0.8125rem', fontWeight: 500 }}>{item.name}</span>
+                    <span style={{ fontWeight: 600, color: '#0f172a' }}>
+                      {item.count} <span style={{ color: '#94a3b8', fontWeight: 400 }}>({item.percentage}%)</span>
+                    </span>
+                  </div>
+                  <div className="dept-progress-bar">
+                    <div 
+                      className="dept-progress-fill" 
+                      style={{ width: `${Math.max(item.percentage, 4)}%` }}
+                    />
+                  </div>
+                </div>
+              ))
+            )}
           </div>
 
           <div style={{ marginTop: 'auto', paddingTop: '16px', borderTop: '1px solid #f1f5f9' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.8125rem', color: '#64748b' }}>
               <CheckCircle2 size={16} color="#059669" />
-              <span>All student records verified in LocalStorage</span>
+              <span>Records synchronized with LocalStorage</span>
             </div>
           </div>
         </div>

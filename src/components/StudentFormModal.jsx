@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { 
   X, 
-  UserPlus, 
   Check, 
   AlertCircle, 
   Edit3, 
@@ -87,15 +86,16 @@ export default function StudentFormModal({
 
   const handleBlur = (field) => {
     setTouched((prev) => ({ ...prev, [field]: true }));
-    // Validate individual field
+    // Validate individual field and update error state
     const validation = validateStudentForm(
       formData,
       existingStudents,
       mode === 'edit' ? initialData?.id : null
     );
-    if (validation.errors[field]) {
-      setErrors((prev) => ({ ...prev, [field]: validation.errors[field] }));
-    }
+    setErrors((prev) => ({
+      ...prev,
+      [field]: validation.errors[field] || null
+    }));
   };
 
   const handleSubmit = (e) => {

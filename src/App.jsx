@@ -49,11 +49,6 @@ export default function App() {
   // Toast Notifications State
   const [toasts, setToasts] = useState([]);
 
-  // Sync to LocalStorage on students state change
-  useEffect(() => {
-    saveStoredStudents(students);
-  }, [students]);
-
   // Toast Helpers
   const addToast = (type, title, message) => {
     const id = Date.now().toString() + Math.random().toString(36).substr(2, 5);
@@ -63,6 +58,18 @@ export default function App() {
   const removeToast = (id) => {
     setToasts((prev) => prev.filter((t) => t.id !== id));
   };
+
+  // Sync to LocalStorage on students state change & notify on failure
+  useEffect(() => {
+    const result = saveStoredStudents(students);
+    if (result && !result.success) {
+      addToast(
+        'error',
+        'Storage Warning',
+        result.error || 'Failed to save student records to LocalStorage.'
+      );
+    }
+  }, [students]);
 
   // CRUD Operations
 
@@ -116,20 +123,22 @@ export default function App() {
     );
 
     setIsFormModalOpen(false);
-    setSelectedStudentForEdit(null);
+    const updatedName = formData.fullName;
 
     // If view modal was open for this student, update view as well
     if (selectedStudentForView && selectedStudentForView.id === selectedStudentForEdit.id) {
-      setSelectedStudentForView({
-        ...selectedStudentForView,
+      setSelectedStudentForView((prev) => ({
+        ...prev,
         ...formData
-      });
+      }));
     }
+
+    setSelectedStudentForEdit(null);
 
     addToast(
       'success',
       'Record Updated',
-      `Student record for ${formData.fullName} updated successfully.`
+      `Student record for ${updatedName} updated successfully.`
     );
   };
 
@@ -151,6 +160,12 @@ export default function App() {
     // If currently viewing deleted student, close view modal
     if (selectedStudentForView && selectedStudentForView.id === studentId) {
       setSelectedStudentForView(null);
+    }
+
+    // If form modal was open for deleted student, close it
+    if (selectedStudentForEdit && selectedStudentForEdit.id === studentId) {
+      setSelectedStudentForEdit(null);
+      setIsFormModalOpen(false);
     }
 
     addToast(
@@ -177,7 +192,6 @@ export default function App() {
         <Header
           activeTab={activeTab}
           onToggleMobileSidebar={() => setIsMobileSidebarOpen(!isMobileSidebarOpen)}
-          studentCount={students.length}
         />
 
         <main className="content-area">

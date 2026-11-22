@@ -1,11 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { 
-  UserPlus, 
-  Download, 
-  Users, 
-  Sparkles, 
-  Filter 
-} from 'lucide-react';
+import { UserPlus, Download } from 'lucide-react';
 import SearchFilter from '../components/SearchFilter';
 import StudentTable from '../components/StudentTable';
 
@@ -54,44 +48,61 @@ export default function Students({
     setSelectedYear('');
   };
 
-  // Export to CSV function (Working SaaS functionality)
+  // Improved CSV Export Function with proper escaping, BOM, and Blob download
   const handleExportCSV = () => {
     if (filteredStudents.length === 0) return;
 
     const headers = [
       'Register Number',
       'Full Name',
-      'Email',
-      'Phone',
+      'Email Address',
+      'Phone Number',
       'Department',
       'Year of Study',
       'Gender',
       'Date of Birth',
-      'Address',
+      'Permanent Address',
       'Registration Date'
     ];
 
+    const escapeCSVCell = (val) => {
+      if (val === null || val === undefined) return '""';
+      // Double up any quotes and wrap in quotes
+      const str = String(val).replace(/"/g, '""');
+      return `"${str}"`;
+    };
+
     const rows = filteredStudents.map((s) => [
-      `"${s.registerNumber || ''}"`,
-      `"${s.fullName || ''}"`,
-      `"${s.email || ''}"`,
-      `"${s.phone || ''}"`,
-      `"${s.department || ''}"`,
-      `"${s.yearOfStudy || ''}"`,
-      `"${s.gender || ''}"`,
-      `"${s.dob || ''}"`,
-      `"${(s.address || '').replace(/"/g, '""')}"`,
-      `"${s.createdAt ? new Date(s.createdAt).toISOString() : ''}"`
+      escapeCSVCell(s.registerNumber),
+      escapeCSVCell(s.fullName),
+      escapeCSVCell(s.email),
+      escapeCSVCell(s.phone),
+      escapeCSVCell(s.department),
+      escapeCSVCell(s.yearOfStudy),
+      escapeCSVCell(s.gender),
+      escapeCSVCell(s.dob),
+      escapeCSVCell(s.address),
+      escapeCSVCell(s.createdAt ? new Date(s.createdAt).toISOString() : '')
     ]);
 
-    const csvContent = 'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows.map(e => e.join(','))].join('\n');
-    const encodedUri = encodeURI(csvContent);
+    // Prepend UTF-8 BOM (\uFEFF) to guarantee Excel/spreadsheet compatibility
+    const csvContent = '\uFEFF' + [
+      headers.join(','), 
+      ...rows.map((row) => row.join(','))
+    ].join('\r\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
-    link.setAttribute('href', encodedUri);
-    link.setAttribute('download', `students_directory_${new Date().toISOString().slice(0, 10)}.csv`);
+    
+    // Meaningful filename containing the current date
+    const todayStr = new Date().toISOString().slice(0, 10);
+    link.href = url;
+    link.setAttribute('download', `students_directory_${todayStr}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+    URL.revokeObjectURL(url);
   };
 
   return (

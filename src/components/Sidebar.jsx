@@ -8,6 +8,7 @@ import {
   Building2, 
   ShieldCheck 
 } from 'lucide-react';
+import { getAcademicYearInfo } from '../utils/helpers';
 
 export default function Sidebar({ 
   activeTab, 
@@ -17,6 +18,8 @@ export default function Sidebar({
   isMobileOpen,
   setIsMobileOpen
 }) {
+  const academicYearInfo = getAcademicYearInfo();
+
   const navItems = [
     {
       id: 'dashboard',
@@ -119,7 +122,7 @@ export default function Sidebar({
               <Building2 size={16} />
               <span>Academic Year</span>
             </div>
-            <p className="info-card-sub">2024 – 2025 Semester I</p>
+            <p className="info-card-sub">{academicYearInfo.fullDisplay}</p>
             <div className="info-card-badge">
               <ShieldCheck size={13} />
               <span>Accredited System</span>

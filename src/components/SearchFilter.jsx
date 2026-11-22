@@ -1,5 +1,5 @@
 import React from 'react';
-import { Search, X, Filter, RotateCcw } from 'lucide-react';
+import { Search, X, RotateCcw } from 'lucide-react';
 import { DEPARTMENTS, YEARS_OF_STUDY } from '../data/initialStudents';
 
 export default function SearchFilter({

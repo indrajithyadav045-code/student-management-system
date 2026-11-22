@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Eye, 
   Edit3, 
@@ -6,7 +6,6 @@ import {
   ArrowUpDown, 
   ArrowUp, 
   ArrowDown, 
-  Users, 
   Mail, 
   Phone, 
   ChevronLeft, 
@@ -25,6 +24,11 @@ export default function StudentTable({
   const [sortOrder, setSortOrder] = useState('desc'); // 'asc' or 'desc'
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 6;
+
+  // Reset to page 1 when the filtered list changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [students.length]);
 
   // Sorting logic
   const handleSort = (field) => {
