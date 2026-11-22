@@ -5,7 +5,8 @@ import {
   createStudent,
   updateStudent,
   deleteStudent,
-  getHealthCheck
+  getHealthCheck,
+  getReadinessCheck
 } from '../controllers/studentController.js';
 import {
   studentRegistrationRules,
@@ -17,8 +18,9 @@ import {
 
 const router = Router();
 
-// System Health Check
+// System Health (Liveness) & Readiness Probes
 router.get('/health', getHealthCheck);
+router.get('/ready', getReadinessCheck);
 
 // Student CRUD Routes
 router

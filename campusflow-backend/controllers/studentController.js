@@ -2,25 +2,46 @@ import pool from '../config/db.js';
 import { sendSuccess, sendError } from '../utils/response.js';
 
 /**
- * Health Check Controller
+ * Liveness Probe: Checks whether Express server is running
  * GET /api/health
  */
-export const getHealthCheck = async (req, res, next) => {
-  let dbStatus = 'disconnected';
-  try {
-    await pool.query('SELECT 1 AS health_check');
-    dbStatus = 'connected';
-  } catch (error) {
-    dbStatus = 'error';
-  }
-
-  return sendSuccess(res, 'CampusFlow API is operational', {
+export const getHealthCheck = (req, res) => {
+  return sendSuccess(res, 'CampusFlow API server is alive', {
     status: 'UP',
-    database: dbStatus,
     timestamp: new Date().toISOString(),
     uptimeSeconds: Math.floor(process.uptime()),
     environment: process.env.NODE_ENV || 'development'
-  });
+  }, 200);
+};
+
+/**
+ * Readiness Probe: Checks whether MySQL database is accessible
+ * GET /api/ready
+ * Returns HTTP 200 when MySQL is connected, HTTP 503 when MySQL is unavailable
+ */
+export const getReadinessCheck = async (req, res) => {
+  try {
+    const connection = await pool.getConnection();
+    await connection.query('SELECT 1 AS readiness_check');
+    connection.release();
+
+    return sendSuccess(res, 'Database connection is healthy and ready', {
+      status: 'READY',
+      database: 'connected',
+      timestamp: new Date().toISOString()
+    }, 200);
+  } catch (error) {
+    return res.status(503).json({
+      success: false,
+      message: 'Database is unavailable. Please verify MySQL service is running.',
+      data: {
+        status: 'NOT_READY',
+        database: 'disconnected',
+        error_code: error.code || 'UNKNOWN',
+        timestamp: new Date().toISOString()
+      }
+    });
+  }
 };
 
 /**

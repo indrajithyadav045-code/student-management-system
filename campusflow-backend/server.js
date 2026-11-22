@@ -48,7 +48,8 @@ app.get('/', (req, res) => {
     message: 'Welcome to CampusFlow Student Management REST API',
     version: '1.0.0',
     documentation: {
-      health: 'GET /api/health',
+      health: 'GET /api/health (Liveness Probe)',
+      ready: 'GET /api/ready (Database Readiness Probe)',
       students: 'GET /api/students',
       studentById: 'GET /api/students/:id',
       createStudent: 'POST /api/students',
