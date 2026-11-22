@@ -1,0 +1,218 @@
+{
+  "info": {
+    "_postman_id": "c1f7823a-e0b5-4cb2-87ad-d34df2998a12",
+    "name": "CampusFlow Student Management API",
+    "description": "Comprehensive Postman test collection covering all 12 CRUD, validation, search, filter, and error scenarios for CampusFlow Student Management REST API.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5000/api",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Server Health Check",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/health",
+          "host": ["{{baseUrl}}"],
+          "path": ["health"]
+        }
+      }
+    },
+    {
+      "name": "2. Register Student (Success)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"full_name\": \"Pooja Hegde\",\n  \"register_number\": \"REG-2026-CS99\",\n  \"email\": \"pooja.hegde@university.edu\",\n  \"phone\": \"9876501234\",\n  \"department\": \"Computer Science & Engineering\",\n  \"year_of_study\": \"1st Year\",\n  \"gender\": \"Female\",\n  \"dob\": \"2006-03-25\",\n  \"address\": \"456 Tech Park Residency, Whitefield, Bangalore\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/students",
+          "host": ["{{baseUrl}}"],
+          "path": ["students"]
+        }
+      }
+    },
+    {
+      "name": "3. Get All Students",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/students",
+          "host": ["{{baseUrl}}"],
+          "path": ["students"]
+        }
+      }
+    },
+    {
+      "name": "4. Get Student by ID",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/students/1",
+          "host": ["{{baseUrl}}"],
+          "path": ["students", "1"]
+        }
+      }
+    },
+    {
+      "name": "5. Search Students",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/students?search=Sharma",
+          "host": ["{{baseUrl}}"],
+          "path": ["students"],
+          "query": [
+            {
+              "key": "search",
+              "value": "Sharma"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "6. Filter by Department",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/students?department=Information Technology",
+          "host": ["{{baseUrl}}"],
+          "path": ["students"],
+          "query": [
+            {
+              "key": "department",
+              "value": "Information Technology"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "7. Update Student",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"full_name\": \"Aarav Sharma\",\n  \"register_number\": \"REG-2024-CS01\",\n  \"email\": \"aarav.sharma@university.edu\",\n  \"phone\": \"9876549999\",\n  \"department\": \"Computer Science & Engineering\",\n  \"year_of_study\": \"2nd Year\",\n  \"gender\": \"Male\",\n  \"dob\": \"2006-04-15\",\n  \"address\": \"Updated Address, Silicon Valley, Sector 7, Bangalore\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/students/1",
+          "host": ["{{baseUrl}}"],
+          "path": ["students", "1"]
+        }
+      }
+    },
+    {
+      "name": "8. Delete Student",
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/students/9",
+          "host": ["{{baseUrl}}"],
+          "path": ["students", "9"]
+        }
+      }
+    },
+    {
+      "name": "9. Error - Duplicate Register Number",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"full_name\": \"Duplicate Tester\",\n  \"register_number\": \"REG-2024-CS01\",\n  \"email\": \"different.email@university.edu\",\n  \"phone\": \"9876543210\",\n  \"department\": \"Mechanical Engineering\",\n  \"year_of_study\": \"1st Year\",\n  \"gender\": \"Male\",\n  \"dob\": \"2005-01-01\",\n  \"address\": \"Campus Hostel Room 101\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/students",
+          "host": ["{{baseUrl}}"],
+          "path": ["students"]
+        }
+      }
+    },
+    {
+      "name": "10. Error - Invalid Email",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"full_name\": \"Test User\",\n  \"register_number\": \"REG-TEST-01\",\n  \"email\": \"invalid-email-address\",\n  \"phone\": \"9876543210\",\n  \"department\": \"Civil Engineering\",\n  \"year_of_study\": \"1st Year\",\n  \"gender\": \"Male\",\n  \"dob\": \"2005-01-01\",\n  \"address\": \"Campus Hostel Room 102\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/students",
+          "host": ["{{baseUrl}}"],
+          "path": ["students"]
+        }
+      }
+    },
+    {
+      "name": "11. Error - Missing Required Fields",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/students",
+          "host": ["{{baseUrl}}"],
+          "path": ["students"]
+        }
+      }
+    },
+    {
+      "name": "12. Error - Non-Existent Student ID",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/students/999999",
+          "host": ["{{baseUrl}}"],
+          "path": ["students", "999999"]
+        }
+      }
+    }
+  ]
+}
